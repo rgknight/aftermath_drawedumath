@@ -1,0 +1,510 @@
+<title>Hard Teacher Questions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a filter bar over a two-pane workbench, question list left, the selected question on graph paper right; stacks to one column with a sheet on phones. */
+:root {
+  --paper: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #1d2430;
+  --muted: #5d6676;
+  --rule: #d9dde5;
+  --grid: #e7ebf1;
+  --redpen: #b8322a;
+  --redpen-soft: #f7e3e0;
+  --pip-on: #2f6f62;
+  --pip-off: #d3d8e0;
+  --focus: #3b6fd9;
+  --good: #2f6f62;
+  --good-soft: #e1efeb;
+  --bad: #94570f;
+  --bad-soft: #f6ead9;
+  --font-ui: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-answer: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.4rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #13171d; --surface: #1b2028; --ink: #e6e9ee; --muted: #9aa3b2; --rule: #2e3540;
+    --grid: #1f252e; --redpen: #ef7d70; --redpen-soft: #3a2220; --pip-on: #5fbfa8; --pip-off: #39414d;
+    --focus: #7ea6ff; --good: #5fbfa8; --good-soft: #1d322d; --bad: #e0a35a; --bad-soft: #352a1c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #13171d; --surface: #1b2028; --ink: #e6e9ee; --muted: #9aa3b2; --rule: #2e3540;
+  --grid: #1f252e; --redpen: #ef7d70; --redpen-soft: #3a2220; --pip-on: #5fbfa8; --pip-off: #39414d;
+  --focus: #7ea6ff; --good: #5fbfa8; --good-soft: #1d322d; --bad: #e0a35a; --bad-soft: #352a1c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: var(--step-0);
+  line-height: 1.5;
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.shell {
+  display: flex; flex-direction: column; gap: 14px; min-height: 100%;
+  padding-block: 18px 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: 1400px; margin: 0 auto;
+}
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px; }
+h1 { font-size: var(--step-2); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.summary { color: var(--muted); font-size: var(--step--1); font-variant-numeric: tabular-nums; }
+.criteria { margin: 0; color: var(--muted); font-size: var(--step--1); max-width: 70ch; }
+
+.filters {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px;
+}
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.field.grow { flex: 1 1 220px; }
+input[type="search"], select {
+  height: 36px; padding: 0 10px; border: 1px solid var(--rule); border-radius: 7px; background: var(--paper);
+  min-width: 0; width: 100%;
+}
+.segmented { display: inline-flex; border: 1px solid var(--rule); border-radius: 7px; overflow: hidden; }
+.segmented button, .chip {
+  height: 36px; padding: 0 11px; border: 0; background: var(--paper); cursor: pointer; white-space: nowrap;
+}
+.segmented button + button { border-left: 1px solid var(--rule); }
+.segmented button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1px solid var(--rule); border-radius: 7px; display: inline-flex; align-items: center; gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1px var(--ink); }
+.chip[aria-pressed="false"] { color: var(--muted); }
+.chip small { color: var(--muted); font-family: var(--font-data); font-size: 0.75rem; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; height: 36px; cursor: pointer; white-space: nowrap; }
+.toggle input { width: 16px; height: 16px; accent-color: var(--ink); }
+
+.workbench { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 14px; align-items: start; }
+.list-pane { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; color: var(--muted); font-size: var(--step--1); }
+.list { display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.item {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; text-align: left; width: 100%;
+  padding: 11px 14px; border: 0; border-bottom: 1px solid var(--rule); background: transparent; cursor: pointer;
+}
+.item:last-child { border-bottom: 0; }
+.item:hover { background: var(--paper); }
+.item[aria-current="true"] { background: var(--redpen-soft); }
+.item .q { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.item .a {
+  grid-column: 1 / -1; color: var(--redpen); font-family: var(--font-answer); font-style: italic; font-size: 1.02rem;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+}
+.item .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 10px; color: var(--muted); font-size: var(--step--1); }
+.more { align-self: center; height: 36px; padding: 0 16px; border: 1px solid var(--rule); border-radius: 7px; background: var(--surface); cursor: pointer; }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+
+.pips { display: inline-flex; gap: 5px; align-items: center; }
+.pips .group { display: inline-flex; gap: 2px; }
+.pip { width: 7px; height: 12px; border-radius: 2px; background: var(--pip-off); }
+.pip.on { background: var(--pip-on); }
+.score { font-family: var(--font-data); font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: var(--step--1); }
+.badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.badge.error::before { background: var(--redpen); }
+.badge.clean::before { background: var(--pip-on); }
+
+.detail {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto;
+  border: 1px solid var(--rule); border-radius: 10px; min-width: 0;
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.detail-inner { display: flex; flex-direction: column; gap: 18px; padding: 20px 22px 24px; }
+.detail-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.detail-top .ids { color: var(--muted); font-size: var(--step--1); font-family: var(--font-data); }
+.open-image {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 7px;
+  background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 700;
+}
+.close-sheet { display: none; height: 36px; padding: 0 12px; border: 1px solid var(--rule); border-radius: 7px; background: var(--surface); cursor: pointer; }
+.detail h2 { margin: 0; font-size: var(--step-1); line-height: 1.35; text-wrap: balance; overflow-wrap: anywhere; }
+.answer {
+  margin: 0; padding: 12px 16px; border-left: 3px solid var(--redpen); background: var(--surface);
+  color: var(--redpen); font-family: var(--font-answer); font-style: italic; font-size: 1.2rem; line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.section-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 6px; }
+.models { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 14px; margin: 0; padding: 0; list-style: none; }
+.models li { display: flex; align-items: center; gap: 8px; font-size: var(--step--1); }
+.models li .pip { flex: none; }
+.models li.miss { color: var(--muted); }
+.caption { margin: 0; background: var(--surface); padding: 12px 14px; border: 1px solid var(--rule); border-radius: 8px; max-width: 70ch; }
+.siblings { display: flex; flex-direction: column; gap: 6px; }
+.sibling {
+  text-align: left; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); cursor: pointer;
+  display: flex; justify-content: space-between; gap: 12px;
+}
+.sibling span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.shot { margin: 0; border: 1px solid var(--rule); border-radius: 8px; background: #ffffff; overflow: hidden; }
+.shot a { display: block; cursor: zoom-in; }
+.shot img { display: block; width: 100%; height: auto; max-width: 100%; }
+.shot figcaption { padding: 6px 10px; font-size: var(--step--1); color: var(--muted); background: var(--surface); border-top: 1px solid var(--rule); }
+.image-note { margin: 0; font-size: var(--step--1); color: var(--muted); }
+.answers-note { margin: 0 0 10px; font-size: var(--step--1); color: var(--muted); max-width: 70ch; }
+.answer-list { display: flex; flex-direction: column; gap: 8px; }
+.answer-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--rule);
+  border-left: 3px solid var(--bad); border-radius: 8px; background: var(--surface); min-width: 0;
+}
+.answer-card.good { border-left-color: var(--good); }
+.answer-card.extra { border-style: dashed; border-left-style: solid; }
+.answer-card header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; }
+.answer-card .model { font-weight: 700; }
+.answer-card .model small { font-weight: 400; color: var(--muted); }
+.rating {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px 2px 2px; border-radius: 6px;
+  font-size: var(--step--1); background: var(--bad-soft); color: var(--bad);
+}
+.rating b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; background: var(--bad); color: var(--surface); font-family: var(--font-data); }
+.good .rating { background: var(--good-soft); color: var(--good); }
+.good .rating b { background: var(--good); }
+.answer-text { white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; }
+.answer-text.clamp { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.expand { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--focus); cursor: pointer; font-size: var(--step--1); }
+.judges { font-size: var(--step--1); color: var(--muted); font-family: var(--font-data); }
+.answer-card details { font-size: var(--step--1); }
+.answer-card summary { cursor: pointer; color: var(--focus); }
+.answer-card details p { margin: 6px 0 0; color: var(--muted); }
+.answer-card details p b { color: var(--ink); }
+.placeholder { color: var(--muted); padding: 40px 22px; }
+.status { color: var(--muted); padding: 40px 0; text-align: center; }
+
+@media (max-width: 860px) {
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .detail {
+    position: fixed; inset: 0; top: 0; max-height: none; border-radius: 0; border: 0; z-index: 20;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+  }
+  .detail-inner { padding-left: 16px; padding-right: 16px; }
+  .close-sheet { display: inline-flex; align-items: center; }
+  .detail.idle { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .item, .chip, .segmented button { transition: background-color 120ms ease; }
+}
+</style>
+
+<div class="shell">
+  <header>
+    <h1>Hard Teacher Questions</h1>
+    <div class="summary" id="summary">Loading questions…</div>
+  </header>
+  <p class="criteria">DrawEduMath questions written by teachers, excluding questions about how the image was made, that 5 or fewer of the 11 models in the Aftermath paper answered correctly. Each mark in a row is one model, grouped Google · OpenAI · Anthropic · Meta; filled means the judges scored it correct.</p>
+
+  <section class="filters" aria-label="Filters">
+    <label class="field grow"><span>Search questions and answers</span>
+      <input type="search" id="search" placeholder="e.g. number line, tape diagram, remainder" autocomplete="off">
+    </label>
+    <label class="field"><span>Question type</span>
+      <select id="category"><option value="all">All types</option></select>
+    </label>
+    <div class="field"><span>Student work</span>
+      <div class="segmented" id="errorFilter" role="group" aria-label="Student work">
+        <button type="button" data-value="all" aria-pressed="true">All</button>
+        <button type="button" data-value="error" aria-pressed="false">Has an error</button>
+        <button type="button" data-value="clean" aria-pressed="false">No error</button>
+      </div>
+    </div>
+    <div class="field"><span>Models correct (of 11)</span>
+      <div class="chips" id="correctFilter" role="group" aria-label="Models correct"></div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="hideGeneric"> Hide the standard “What errors does the student make?” question</label>
+    <label class="toggle"><input type="checkbox" id="lunaOnly"> Only questions GPT-6 Luna answered</label>
+    <label class="field"><span>Order</span>
+      <select id="sort">
+        <option value="hard">Fewest models correct first</option>
+        <option value="problem">By problem</option>
+      </select>
+    </label>
+  </section>
+
+  <div class="workbench">
+    <section class="list-pane" aria-label="Questions">
+      <div class="list-head"><span id="listCount"></span><span id="listHint">Select a question to see the teacher’s full description.</span></div>
+      <div class="list" id="list"><div class="status">Loading questions…</div></div>
+      <button type="button" class="more" id="more" hidden>Show more</button>
+    </section>
+    <aside class="detail idle" id="detail" aria-label="Selected question" aria-live="polite">
+      <div class="placeholder">Select a question to see the teacher’s answer, which models got it right, the teacher’s description of the student work, and the other hard questions on the same image.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  const PAGE = 150;
+  const state = { search: "", category: "all", error: "all", correct: new Set([0, 1, 2, 3, 4, 5]), hideGeneric: false, lunaOnly: false, sort: "hard", limit: PAGE, selected: null };
+  const RATING_LABELS = { 4: "Same meaning", 3: "Correct, partial", 2: "Wrong", 1: "Irrelevant or wrong", "-1": "No rating" };
+  const JUDGE_NAMES = ["Claude Sonnet 4.5", "Gemini 2.5 Pro", "GPT-4o"];
+  const answerCache = new Map();
+
+  function loadAnswers(problem) {
+    if (!answerCache.has(problem)) {
+      const request = fetch("answers/" + problem + ".json").then((response) => {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      });
+      request.catch(() => answerCache.delete(problem));
+      answerCache.set(problem, request);
+    }
+    return answerCache.get(problem);
+  }
+
+  function answerCard(name, note, answer, rating, extraHtml) {
+    const good = rating >= 3;
+    return '<article class="answer-card' + (good ? " good" : "") + (note ? " extra" : "") + '">' +
+      '<header><span class="model">' + escape(name) + (note ? " <small>" + escape(note) + "</small>" : "") + "</span>" +
+      '<span class="rating"><b>' + (rating > 0 ? rating : "–") + "</b>" + RATING_LABELS[rating] + "</span></header>" +
+      '<div class="answer-text clamp">' + (answer ? escape(answer) : "<em>No answer</em>") + "</div>" +
+      '<button type="button" class="expand" hidden>Show full answer</button>' +
+      (extraHtml || "") +
+    "</article>";
+  }
+
+  function renderAnswers(q, payload) {
+    const box = document.getElementById("answers");
+    if (!box) return;
+    const rows = payload.models[String(q.id)] || [];
+    let html = data.models.map((name, i) => answerCard(name, "", (rows[i] || [])[0], (rows[i] || [])[1] ?? -1)).join("");
+    const luna = payload.luna[String(q.id)];
+    if (luna) {
+      const [answer, ensemble, ratings, reasons] = luna;
+      const judges = '<div class="judges">' + JUDGE_NAMES.map((judge, i) => escape(judge) + " " + (ratings[i] > 0 ? ratings[i] : "–")).join(" · ") + "</div>" +
+        "<details><summary>Judges’ reasons</summary>" +
+        JUDGE_NAMES.map((judge, i) => "<p><b>" + escape(judge) + " (" + (ratings[i] > 0 ? ratings[i] : "unreadable") + "):</b> " + escape(reasons[i]) + "</p>").join("") +
+        "</details>";
+      html += answerCard(data.extraModel, "our run, no reasoning", answer, ensemble, judges);
+    }
+    box.querySelector(".answer-list").innerHTML = html;
+    for (const card of box.querySelectorAll(".answer-card")) {
+      const text = card.querySelector(".answer-text");
+      if (text.scrollHeight > text.clientHeight + 2) card.querySelector(".expand").hidden = false;
+    }
+  }
+  let data = null, questions = [], filtered = [], byImage = new Map(), groups = [];
+
+  const $ = (id) => document.getElementById(id);
+  const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const developer = (name) => name.startsWith("Gemini") ? "Google" : name.startsWith("Claude") ? "Anthropic" : name.startsWith("Llama") ? "Meta" : "OpenAI";
+
+  function pips(correctBy) {
+    return '<span class="pips" aria-hidden="true">' + groups.map((group) =>
+      '<span class="group">' + group.map((i) => '<span class="pip' + (correctBy[i] === "1" ? " on" : "") + '"></span>').join("") + "</span>"
+    ).join("") + "</span>";
+  }
+
+  function applyFilters() {
+    const terms = state.search.toLowerCase().split(/\s+/).filter(Boolean);
+    filtered = questions.filter((q) => {
+      if (state.category !== "all" && q.category !== state.category) return false;
+      if (state.error === "error" && !q.image.error) return false;
+      if (state.error === "clean" && q.image.error) return false;
+      if (state.hideGeneric && q.generic) return false;
+      if (state.lunaOnly && !q.luna) return false;
+      if (!state.correct.has(q.correct)) return false;
+      return terms.every((t) => q.haystack.includes(t));
+    });
+    filtered.sort(state.sort === "hard"
+      ? (a, b) => a.correct - b.correct || a.image.problem - b.image.problem || a.id - b.id
+      : (a, b) => a.image.problem - b.image.problem || a.image.name.localeCompare(b.image.name) || a.id - b.id);
+  }
+
+  function renderChips() {
+    const counts = [0, 0, 0, 0, 0, 0];
+    const terms = state.search.toLowerCase().split(/\s+/).filter(Boolean);
+    for (const q of questions) {
+      if (state.category !== "all" && q.category !== state.category) continue;
+      if (state.error === "error" && !q.image.error) continue;
+      if (state.error === "clean" && q.image.error) continue;
+      if (state.hideGeneric && q.generic) continue;
+      if (state.lunaOnly && !q.luna) continue;
+      if (!terms.every((t) => q.haystack.includes(t))) continue;
+      counts[q.correct] += 1;
+    }
+    $("correctFilter").innerHTML = counts.map((count, n) =>
+      '<button type="button" class="chip" data-value="' + n + '" aria-pressed="' + state.correct.has(n) + '">' + n + " <small>" + count.toLocaleString() + "</small></button>"
+    ).join("");
+  }
+
+  function renderList() {
+    const list = $("list");
+    $("listCount").textContent = filtered.length.toLocaleString() + " questions on " + new Set(filtered.map((q) => q.image.name)).size.toLocaleString() + " images";
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty">No questions match these filters. Clear the search or turn on more “models correct” counts.</div>';
+      $("more").hidden = true;
+      return;
+    }
+    list.innerHTML = filtered.slice(0, state.limit).map((q) =>
+      '<button type="button" class="item" data-id="' + q.id + '" aria-current="' + (state.selected === q.id) + '">' +
+        '<span class="q">' + escape(q.question) + "</span>" +
+        '<span class="score">' + pips(q.correctBy) + " " + q.correct + "/11</span>" +
+        '<span class="a">' + escape(q.answer) + "</span>" +
+        '<span class="meta"><span>' + escape(q.category) + "</span><span>Problem " + q.image.problem + '</span><span class="badge ' + (q.image.error ? "error" : "clean") + '">' + (q.image.error ? "Student made an error" : "No error") + "</span></span>" +
+      "</button>"
+    ).join("");
+    const remaining = filtered.length - state.limit;
+    $("more").hidden = remaining <= 0;
+    $("more").textContent = "Show " + Math.min(PAGE, remaining).toLocaleString() + " more (" + remaining.toLocaleString() + " left)";
+  }
+
+  function renderDetail() {
+    const panel = $("detail");
+    const q = questions[state.selected];
+    if (!q) { panel.classList.add("idle"); return; }
+    panel.classList.remove("idle");
+    const siblings = (byImage.get(q.image.name) || []).filter((s) => s.id !== q.id);
+    panel.innerHTML =
+      '<div class="detail-inner">' +
+        '<div class="detail-top">' +
+          '<span class="ids">Problem ' + q.image.problem + " · " + escape(q.image.name) + "</span>" +
+          '<span style="display:flex;gap:8px;flex-wrap:wrap">' +
+            '<a class="open-image" href="' + escape(q.image.url) + '" target="_blank" rel="noopener">Open student work ↗</a>' +
+            '<button type="button" class="close-sheet" id="closeSheet">Back to list</button>' +
+          "</span>" +
+        "</div>" +
+        '<figure class="shot"><a href="' + escape(q.image.url) + '" target="_blank" rel="noopener" title="Open full size">' +
+          '<img src="' + escape(q.image.url) + '" alt="Problem ' + q.image.problem + ' on the left and the student’s work on the right"></a>' +
+          "<figcaption>Problem on the left, student work on the right. Click to open full size.</figcaption></figure>" +
+        '<p class="image-note" hidden>The image can’t be shown inline here. Use “Open student work”, or run the local explorer (code/explorer/serve.py) to see images on the page.</p>' +
+        '<div><span class="badge ' + (q.image.error ? "error" : "clean") + '">' + (q.image.error ? "Student made an error" : "No error in the student work") + "</span> · <span class=\"score\">" + escape(q.category) + "</span></div>" +
+        "<h2>" + escape(q.question) + "</h2>" +
+        '<div><p class="section-label">Teacher’s answer</p><blockquote class="answer">' + escape(q.answer) + "</blockquote></div>" +
+        '<div id="answers"><p class="section-label">Model answers · ' + q.correct + " of 11 published models correct</p>" +
+          '<p class="answers-note">Each answer was rated 1–4 against the teacher’s answer by three judges (Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-4o), taking the rating most judges gave; 3 or 4 counts as correct. The paper’s files keep only the combined rating, so individual judges are shown for GPT-6 Luna only.</p>' +
+          '<div class="answer-list"><p class="answers-note">Loading model answers…</p></div></div>' +
+        '<div><p class="section-label">Teacher’s description of the student work</p><p class="caption">' + escape(q.image.caption) + "</p></div>" +
+        (siblings.length
+          ? '<div><p class="section-label">Other hard questions on this image (' + siblings.length + ')</p><div class="siblings">' +
+              siblings.map((s) => '<button type="button" class="sibling" data-id="' + s.id + '"><span>' + escape(s.question) + '</span><span class="score">' + s.correct + "/11</span></button>").join("") +
+            "</div></div>"
+          : "") +
+      "</div>";
+    const shot = panel.querySelector(".shot img");
+    shot.addEventListener("error", () => {
+      panel.querySelector(".shot").hidden = true;
+      panel.querySelector(".image-note").hidden = false;
+    });
+    panel.scrollTop = 0;
+    loadAnswers(q.image.problem)
+      .then((payload) => { if (state.selected === q.id) renderAnswers(q, payload); })
+      .catch((error) => {
+        if (state.selected !== q.id) return;
+        panel.querySelector(".answer-list").innerHTML = '<p class="answers-note">The model answers didn’t load (' + escape(error.message) + "). Select the question again to retry.</p>";
+      });
+  }
+
+  function preload(q) {
+    if (!q) return;
+    new Image().src = q.image.url;
+    loadAnswers(q.image.problem).catch(() => {});
+  }
+
+  function refresh(resetLimit) {
+    if (resetLimit) state.limit = PAGE;
+    applyFilters();
+    renderChips();
+    renderList();
+  }
+
+  function select(id) {
+    state.selected = id;
+    for (const el of document.querySelectorAll(".item")) el.setAttribute("aria-current", String(Number(el.dataset.id) === id));
+    renderDetail();
+  }
+
+  function bind() {
+    let timer = null;
+    $("search").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.search = e.target.value; refresh(true); }, 150); });
+    $("category").addEventListener("change", (e) => { state.category = e.target.value; refresh(true); });
+    $("sort").addEventListener("change", (e) => { state.sort = e.target.value; refresh(true); });
+    $("hideGeneric").addEventListener("change", (e) => { state.hideGeneric = e.target.checked; refresh(true); });
+    $("lunaOnly").addEventListener("change", (e) => { state.lunaOnly = e.target.checked; refresh(true); });
+    $("errorFilter").addEventListener("click", (e) => {
+      const button = e.target.closest("button"); if (!button) return;
+      state.error = button.dataset.value;
+      for (const b of $("errorFilter").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b === button));
+      refresh(true);
+    });
+    $("correctFilter").addEventListener("click", (e) => {
+      const button = e.target.closest("button"); if (!button) return;
+      const n = Number(button.dataset.value);
+      if (state.correct.has(n)) state.correct.delete(n); else state.correct.add(n);
+      refresh(true);
+    });
+    $("more").addEventListener("click", () => { state.limit += PAGE; renderList(); });
+    $("list").addEventListener("click", (e) => { const item = e.target.closest(".item"); if (item) select(Number(item.dataset.id)); });
+    $("detail").addEventListener("click", (e) => {
+      if (e.target.closest("#closeSheet")) { state.selected = null; renderDetail(); renderList(); return; }
+      const expand = e.target.closest(".expand");
+      if (expand) {
+        const text = expand.parentElement.querySelector(".answer-text");
+        const collapsed = text.classList.toggle("clamp");
+        expand.textContent = collapsed ? "Show full answer" : "Show less";
+        return;
+      }
+      const sibling = e.target.closest(".sibling"); if (sibling) select(Number(sibling.dataset.id));
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.target.matches("input, select") || !filtered.length) return;
+      if (e.key !== "j" && e.key !== "k") return;
+      const index = filtered.findIndex((q) => q.id === state.selected);
+      const next = e.key === "j" ? Math.min(filtered.length - 1, index + 1) : Math.max(0, index - 1);
+      if (next >= state.limit) { state.limit += PAGE; renderList(); }
+      select(filtered[next].id);
+      preload(filtered[e.key === "j" ? next + 1 : next - 1]);
+      const el =document.querySelector('.item[data-id="' + filtered[next].id + '"]');
+      if (el) el.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  fetch("explorer_data.json")
+    .then((response) => { if (!response.ok) throw new Error(response.status); return response.json(); })
+    .then((json) => {
+      data = json;
+      const developers = data.models.map(developer);
+      groups = [];
+      developers.forEach((d, i) => { if (!i || d !== developers[i - 1]) groups.push([]); groups[groups.length - 1].push(i); });
+      questions = data.questions.map(([imageIndex, question, answer, category, correctBy, luna], id) => {
+        const image = data.images[imageIndex];
+        return {
+          id, image, question, answer, category, correctBy, luna: luna === 1,
+          correct: [...correctBy].filter((c) => c === "1").length,
+          generic: question.startsWith("What errors does the student make"),
+          haystack: (question + " " + answer).toLowerCase(),
+        };
+      });
+      for (const q of questions) { if (!byImage.has(q.image.name)) byImage.set(q.image.name, []); byImage.get(q.image.name).push(q); }
+      $("category").insertAdjacentHTML("beforeend", data.categories.map((c) => '<option value="' + escape(c) + '">' + escape(c) + "</option>").join(""));
+      const problems = new Set(data.images.map((i) => i.problem)).size;
+      $("summary").textContent = questions.length.toLocaleString() + " questions · " + data.images.length.toLocaleString() + " images · " + problems + " problems";
+      bind();
+      refresh(true);
+      if (window.matchMedia("(min-width: 861px)").matches && filtered.length) select(filtered[0].id);
+    })
+    .catch((error) => {
+      $("summary").textContent = "";
+      $("list").innerHTML = '<div class="empty">The question data didn’t load (' + escape(error.message) + "). Reload the page to try again.</div>";
+    });
+})();
+</script>
