@@ -210,3 +210,6 @@ __marimo__/
 data/
 # Batch runs and model outputs
 output/
+
+# Deployment details and review exports stay local
+.env.deploy

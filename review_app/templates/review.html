@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block main %}
+{% if flash %}<div class="flash {{ flash.kind }}" role="status">{{ flash.text }}</div>{% endif %}
+{% set retry = form if form and form.item == item_id else none %}
+<figure class="shot">
+  <a href="{{ item.image_url }}" target="_blank" rel="noopener" title="Open full size">
+    <img src="{{ item.image_url }}" alt="Problem {{ item.problem }} on the left and the student’s work on the right">
+  </a>
+  <figcaption>Problem on the left, student work on the right. Click to open full size.</figcaption>
+</figure>
+<div class="work">
+  <section class="qa" aria-label="Question">
+    <p class="meta">Problem {{ item.problem }} · {{ item.category }}{% if item.source == "modified" %} · <span class="edited">Edited by a reviewer</span>{% endif %}</p>
+    <h1>{{ item.question }}</h1>
+    <p class="label">Teacher’s answer</p>
+    <blockquote class="answer">{{ item.answer }}</blockquote>
+    <div class="actions">
+      <form method="post" action="/review/{{ item_id }}">
+        <input type="hidden" name="decision" value="approve">
+        <button class="btn approve">Approve</button>
+      </form>
+      <button type="button" class="btn reject" data-open="reject-panel">Reject</button>
+      <button type="button" class="btn modify" data-open="modify-panel">Modify</button>
+      <form method="post" action="/skip" class="skip"><button class="btn quiet">Skip image</button></form>
+    </div>
+    <form id="reject-panel" class="panel" method="post" action="/review/{{ item_id }}"{% if not (retry and retry.decision == "reject") %} hidden{% endif %}>
+      <input type="hidden" name="decision" value="reject">
+      <label for="reason">Why reject it? One line.</label>
+      <input id="reason" name="reason" maxlength="300" required autocomplete="off" value="{{ retry.reason if retry else '' }}" placeholder="e.g. Can’t tell which line the question means">
+      <div class="row">
+        <button class="btn primary-reject">Reject question</button>
+        <button type="button" class="btn quiet" data-close>Cancel</button>
+      </div>
+    </form>
+    <form id="modify-panel" class="panel" method="post" action="/review/{{ item_id }}"{% if not (retry and retry.decision == "modify") %} hidden{% endif %}>
+      <input type="hidden" name="decision" value="modify">
+      <label for="question">Question</label>
+      <textarea id="question" name="question" maxlength="2000" required>{{ retry.question if retry else item.question }}</textarea>
+      <label for="answer">Teacher’s answer</label>
+      <textarea id="answer" name="answer" maxlength="2000" required>{{ retry.answer if retry else item.answer }}</textarea>
+      <p class="hint">Your version goes back into the queue for another reviewer, without model answers.</p>
+      <div class="row">
+        <button class="btn primary">Save modified version</button>
+        <button type="button" class="btn quiet" data-close>Cancel</button>
+      </div>
+    </form>
+  </section>
+  <section class="models" aria-label="Model answers">
+    {% if item.models %}
+    <p class="label">Model answers · {{ item.models_correct }} of 11 published models judged correct</p>
+    {% for model in item.models %}
+    <article class="card{% if model.rating >= 3 %} good{% endif %}">
+      <header>
+        <span>{{ model.name }}</span>
+        <span class="rating"><b>{{ model.rating if model.rating > 0 else "–" }}</b>{{ rating_labels.get(model.rating, "No rating") }}</span>
+      </header>
+      <div class="text clamp">{{ model.answer or "No answer" }}</div>
+      <button type="button" class="more" hidden>Show full answer</button>
+    </article>
+    {% endfor %}
+    {% else %}
+    <p class="label">Model answers</p>
+    <p class="note">This is a reviewer’s edited version, so there are no model answers for it.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

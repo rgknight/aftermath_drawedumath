@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block main %}
+{% if flash %}<div class="flash {{ flash.kind }}" role="status">{{ flash.text }}</div>{% endif %}
+<div class="centered">
+  <h1>You’ve reached the end of the queue</h1>
+  <p class="note">There are no questions left for you right now. Thank you for reviewing {{ reviewed }}. Images other reviewers are working on, or that you skipped, may come back later.</p>
+</div>
+{% endblock %}
