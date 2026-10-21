@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Question Review{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Newsreader:ital,opsz,wght@1,6..72,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: slim header, the student work full width, then the question and decision, then the model answers below. */
+:root {
+  --paper: #f6f7f9; --surface: #ffffff; --ink: #1d2430; --muted: #5d6676; --rule: #d9dde5;
+  --redpen: #b8322a; --redpen-soft: #f7e3e0; --good: #2f6f62; --good-soft: #e1efeb;
+  --bad: #94570f; --bad-soft: #f6ead9; --focus: #3b6fd9; --notice-soft: #e8eefb;
+  --font-ui: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-answer: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #13171d; --surface: #1b2028; --ink: #e6e9ee; --muted: #9aa3b2; --rule: #2e3540;
+    --redpen: #ef7d70; --redpen-soft: #3a2220; --good: #5fbfa8; --good-soft: #1d322d;
+    --bad: #e0a35a; --bad-soft: #352a1c; --focus: #7ea6ff; --notice-soft: #1f2a40; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.top {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+  padding: 10px max(16px, env(safe-area-inset-left)); border-bottom: 1px solid var(--rule); background: var(--surface);
+}
+.top strong { font-size: 1rem; }
+.top .who { color: var(--muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+.top nav { display: flex; gap: 8px; align-items: center; }
+main { max-width: 1280px; margin: 0 auto; padding: 16px max(16px, env(safe-area-inset-left)) 40px; display: flex; flex-direction: column; gap: 16px; }
+.btn {
+  height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface);
+  cursor: pointer; font-weight: 700;
+}
+.btn.quiet { font-weight: 400; color: var(--muted); }
+.btn.small { height: 32px; padding: 0 12px; font-size: 0.875rem; }
+.btn.approve { background: var(--good); border-color: var(--good); color: var(--surface); }
+.btn.reject { background: var(--surface); border-color: var(--bad); color: var(--bad); }
+.btn.modify { background: var(--surface); border-color: var(--ink); color: var(--ink); }
+.btn.primary-reject { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.btn:disabled { opacity: 0.6; cursor: progress; }
+.flash { padding: 10px 14px; border-radius: 8px; background: var(--notice-soft); }
+.flash.error { background: var(--bad-soft); color: var(--bad); font-weight: 700; }
+.shot { margin: 0; border: 1px solid var(--rule); border-radius: 10px; background: #ffffff; overflow: hidden; }
+.shot a { display: block; cursor: zoom-in; }
+.shot img { display: block; width: 100%; max-height: 62vh; object-fit: contain; }
+.shot figcaption { padding: 6px 12px; font-size: 0.8125rem; color: var(--muted); background: var(--surface); border-top: 1px solid var(--rule); }
+.work { display: flex; flex-direction: column; gap: 24px; max-width: 900px; }
+.qa, .models { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.meta, .label { margin: 0; color: var(--muted); font-size: 0.8125rem; }
+.label { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.72rem; }
+.edited { color: var(--focus); font-weight: 700; }
+h1 { margin: 0; font-size: 1.35rem; line-height: 1.35; text-wrap: balance; overflow-wrap: anywhere; }
+.answer {
+  margin: 0; padding: 10px 14px; border-left: 3px solid var(--redpen); background: var(--surface);
+  color: var(--redpen); font-family: var(--font-answer); font-style: italic; font-size: 1.2rem; overflow-wrap: anywhere;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.actions form { margin: 0; }
+.actions .skip { margin-left: auto; }
+.panel { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.panel label { font-weight: 700; }
+.panel input, .panel textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); }
+.panel textarea { min-height: 80px; resize: vertical; }
+.panel .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.panel .hint { margin: 0; color: var(--muted); font-size: 0.8125rem; }
+.card {
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--rule);
+  border-left: 3px solid var(--bad); border-radius: 8px; background: var(--surface); min-width: 0;
+}
+.card.good { border-left-color: var(--good); }
+.card header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; font-weight: 700; }
+.rating { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px 2px 2px; border-radius: 6px; font-size: 0.8125rem; font-weight: 400; background: var(--bad-soft); color: var(--bad); }
+.rating b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; background: var(--bad); color: var(--surface); font-family: var(--font-data); }
+.good .rating { background: var(--good-soft); color: var(--good); }
+.good .rating b { background: var(--good); }
+.text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.text.clamp { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.more { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--focus); cursor: pointer; font-size: 0.8125rem; }
+.note { margin: 0; color: var(--muted); }
+.centered { max-width: 420px; margin: 12vh auto 0; display: flex; flex-direction: column; gap: 14px; }
+.centered input { height: 44px; padding: 0 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); width: 100%; }
+dialog.guide { max-width: 640px; width: calc(100% - 32px); border: 1px solid var(--rule); border-radius: 12px; padding: 0; background: var(--surface); color: var(--ink); }
+dialog.guide::backdrop { background: rgb(0 0 0 / 0.45); }
+.guide-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow: auto; }
+.guide-body h2 { margin: 0; font-size: 1.25rem; }
+.guide-body h3 { margin: 6px 0 0; font-size: 1rem; }
+.guide-body p, .guide-body ul { margin: 0; }
+.guide-body ul { padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.guide-foot { display: flex; justify-content: flex-end; padding: 12px 24px; border-top: 1px solid var(--rule); }
+@media (max-width: 860px) { .actions .skip { margin-left: 0; } }
+</style>
+</head>
+<body>
+{% if reviewer %}
+<header class="top">
+  <strong>DrawEduMath question review</strong>
+  <nav>
+    <span class="who">{{ reviewer }} · {{ reviewed }} reviewed</span>
+    <button type="button" class="btn small quiet" data-guide>Guidelines</button>
+    <form method="post" action="/logout"><button class="btn small quiet">Sign out</button></form>
+  </nav>
+</header>
+<dialog id="guide" class="guide" aria-labelledby="guide-title"{% if show_guide %} open{% endif %}>
+  <div class="guide-body">
+    <h2 id="guide-title">How to review</h2>
+    <p>These questions come from DrawEduMath: photos and scans of students’ handwritten math work, described by teachers. The questions and answers you’ll see were written by teachers. Most of the AI models we tested answered them wrong. We need to know whether that’s because the question is genuinely hard for AI, or because something is wrong with the question or its answer.</p>
+    <p>For each one, look at the student’s work (right side of the image; the problem is on the left), read the question and the teacher’s answer, then choose:</p>
+    <h3>Approve</h3>
+    <p>The question can be answered from the student’s work, a teacher would agree on the answer, and the teacher’s answer shown is correct.</p>
+    <h3>Reject</h3>
+    <p>The question isn’t worth keeping, even with edits: it can’t be answered from the image, it’s too subjective for teachers to agree on, or it asks about something trivial. For example, "Unclear" is not a good answer. Write one line saying why you rejected it.</p>
+    <h3>Modify</h3>
+    <p>The question is worth keeping but needs fixing: the wording is ambiguous (for example, “the first line” when there are two), the teacher’s answer is wrong or incomplete but can be fixed, or the idea is promising but the implementation is poor. Rewrite the question, the answer, or both. Your version goes back into the queue for another reviewer. If you're asked to review a question that you re-wrote, skip it.</p>
+    <h3>Skip image</h3>
+    <p>The image goes back to the queue for someone else.</p>
+    <h3>Model answers</h3>
+    <p>Each model’s answer is shown with the rating AI judges gave it against the teacher’s answer: 4 same meaning, 3 correct but partial, 2 wrong, 1 irrelevant or wrong. Use them to spot a teacher answer that might be wrong or a question that reads two ways, not as the right answer.</p>
+    <p>Once you start an image, it’s yours for {{ lease_minutes }} minutes after your last action, so no one else gets it. If you step away longer, it goes back to the queue.</p>
+  </div>
+  <div class="guide-foot"><button type="button" class="btn primary" data-guide-close>Start reviewing</button></div>
+</dialog>
+{% endif %}
+<main>{% block main %}{% endblock %}</main>
+<script>
+(function () {
+  const guide = document.getElementById("guide");
+  if (guide) {
+    if (guide.hasAttribute("open")) { guide.close(); guide.showModal(); }
+    document.querySelector("[data-guide]").addEventListener("click", () => guide.showModal());
+    guide.querySelector("[data-guide-close]").addEventListener("click", () => guide.close());
+  }
+  document.addEventListener("click", (event) => {
+    const opener = event.target.closest("[data-open]");
+    if (opener) {
+      for (const panel of document.querySelectorAll(".panel")) panel.hidden = panel.id !== opener.dataset.open;
+      const panel = document.getElementById(opener.dataset.open);
+      const field = panel.querySelector("input:not([type=hidden]), textarea");
+      if (field) field.focus();
+    }
+    if (event.target.closest("[data-close]")) event.target.closest(".panel").hidden = true;
+    const more = event.target.closest(".more");
+    if (more) {
+      const text = more.parentElement.querySelector(".text");
+      more.textContent = text.classList.toggle("clamp") ? "Show full answer" : "Show less";
+    }
+  });
+  for (const form of document.querySelectorAll("form")) {
+    form.addEventListener("submit", () => { for (const button of form.querySelectorAll("button")) button.disabled = true; });
+  }
+  for (const text of document.querySelectorAll(".text.clamp")) {
+    if (text.scrollHeight > text.clientHeight + 2) text.parentElement.querySelector(".more").hidden = false;
+  }
+})();
+</script>
+</body>
+</html>

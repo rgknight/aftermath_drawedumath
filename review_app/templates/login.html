@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Question Review{% endblock %}
+{% block main %}
+<form class="centered" method="post" action="/login">
+  <h1>DrawEduMath question review</h1>
+  <label for="reviewer_id">Your reviewer ID</label>
+  <input id="reviewer_id" name="reviewer_id" autocomplete="username" autofocus required>
+  {% if error %}<div class="flash error" role="alert">{{ error }}</div>{% endif %}
+  <button class="btn primary">Start reviewing</button>
+</form>
+{% endblock %}
