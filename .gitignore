@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Downloaded datasets (Hugging Face / ASSISTments)
+data/
+# Batch runs and model outputs
+output/

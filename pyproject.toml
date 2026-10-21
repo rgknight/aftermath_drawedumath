@@ -1,0 +1,29 @@
+[project]
+name = "aftermath-drawedumath"
+version = "0.1.0"
+description = "Follow-up error analysis of VLMs on DrawEduMath"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic",
+    "google-genai",
+    "huggingface-hub>=2.2.0",
+    "openai>=2.0",
+    "pandas>=2.2",
+    "python-dotenv>=1.0",
+    "scipy>=1.18.1",
+    "statsmodels>=0.15.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["code"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["code/aftermath.ipynb", "code/small_labeling_tasks.py"]
